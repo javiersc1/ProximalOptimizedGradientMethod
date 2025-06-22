@@ -1,22 +1,78 @@
-# OptimalGradientDescent
+# ProximalOptimizedGradientMethod
 
-## Gradient Descent Comparison
+## Plot
 
 ![plot](https://github.com/javiersc1/ProximalOptimizedGradientMethod/blob/main/plot.png?raw=true)
 
-## Usage
+## Usage Example
 
 ```python
+
+def Fcost(x, vargs):
+    # cost function of f(x) + lam*g(x) where f(x) is data_fidelity
+    data_fidelity = 0.5*np.linalg.norm(vargs["y"] - vargs["A"] @ x)**2
+    reg = vargs["lam"]*np.linalg.norm(x, ord=1)
+    return data_fidelity+reg
+
+def f_grad(x, vargs):
+    # gradient of smooth term f(x) = \| y - A @ x \|_2^2
+    return -1 * vargs["A"].T @ (vargs["y"] - vargs["A"] @ x)
+
+def soft_threshold(M, lam):
+    # proximal operator for L1 norm regularization
+    return np.sign(M) * np.maximum(np.abs(M) - lam, 0)
+
+def g_prox(M, c, vargs):
+    # function used within pogm function
+    # c is a scaling factor calculated in pogm function
+    return soft_threshold(M, c * vargs["lam"])
+
+if __name__ == "__main__":
+    # toy problem lasso-style regression
+    np.random.seed(42)
+    D = 1000
+    N = 3
+    noise = 0.1
+    lam = 1.0
+    # model
+    A = np.random.rand(D,N)
+    f_L = np.linalg.norm(A, ord=2)**2
+    x_true = np.array([1.5, 0, -2])
+    y = A @ x_true + noise * np.random.randn(D)
+    # intialize and fill vargs dictionary with needed function values
+    x0 = np.random.randn(N)
+    vargs = {"A": A, "y": y, "lam": lam}
+    true_cost = Fcost(x_true, vargs)
+    # run algorithm
+    x_pogm, cost_pogm = pogm(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom="pogm", restart="gr")
+    x_fpgm, cost_fpgm = pogm(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom="fpgm", restart="gr")
+    x_pgm, cost_pgm = pogm(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom="pgm", restart="gr")
+    # plotting
+    plt.plot(np.log(np.abs(cost_pogm -true_cost)), label="pogm", marker="D")
+    plt.plot(np.log(np.abs(cost_fpgm - true_cost)), label="fpgm", marker="x")
+    plt.plot(np.log(np.abs(cost_pgm - true_cost)), label="pgm", marker="o")
+    plt.legend()
+    plt.title("Optimal Gradient Method Comparisons")
+    plt.xlabel("Iterations")
+    plt.ylabel("$ \\text{log} | \\text{Fcost} - \\text{Ftrue} | $")
+    plt.tight_layout()
+    plt.savefig("/home/javier/Desktop/ProximalOptimizedGradientMethod/plot.png", dpi = 1200, bbox_inches='tight')
+
+```
+
+## Documentation
+
+```python
+
 def pogm(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom="pogm", restart="gr", restart_cutoff=0, bsig=1, tol=1e-4):
     """
-    x, out = pogm_restart(x0, Fcost, f_grad, f_L ;
-    f_mu=0, mom=:pogm, restart=:gr, restart_cutoff=0.,
-    bsig=1, niter=10, g_prox=(z,c)->z, fun=...)
+    x, out = pogm_restart(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom=:pogm, restart=:gr, restart_cutoff=0, bsig=1, tol=1e-4)
 
     Iterative proximal algorithms (PGM=ISTA, FPGM=FISTA, POGM) with restart.
 
     # in
     - `x0` initial guess
+    - `vargs` dictionary of things needed in functions Fcost, f_grad, and g_prox such as A, lambda value, y, etc...
     - `Fcost` function for computing the cost function value ``F(x)``
         - (needed only if `restart === :fr`)
     - `f_grad` function for computing the gradient of ``f(x)``
@@ -38,7 +94,7 @@ def pogm(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom="pogm", restart="gr"
     - `restart_cutoff` for `:gr` restart if cos(angle) < this; default 0.
     - `bsig` gradient "gamma" decrease option (value within [0 1]); default 1
         - see ``\\bar{\\sigma}`` in [KF18]
-    - `niter` number of iterations; default 10
+    - `tol` tol for normalized norm error between xnew and xold
 
     # out
     - `x` final iterate

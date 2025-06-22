@@ -37,14 +37,13 @@ def gr_restart(Fgrad, ynew_yold, restart_cutoff):
 
 def pogm(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom="pogm", restart="gr", restart_cutoff=0, bsig=1, tol=1e-4):
     """
-    x, out = pogm_restart(x0, Fcost, f_grad, f_L ;
-    f_mu=0, mom=:pogm, restart=:gr, restart_cutoff=0.,
-    bsig=1, niter=10, g_prox=(z,c)->z, fun=...)
+    x, out = pogm_restart(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom=:pogm, restart=:gr, restart_cutoff=0, bsig=1, tol=1e-4)
 
     Iterative proximal algorithms (PGM=ISTA, FPGM=FISTA, POGM) with restart.
 
     # in
     - `x0` initial guess
+    - `vargs` dictionary of things needed in functions Fcost, f_grad, and g_prox such as A, lambda value, y, etc...
     - `Fcost` function for computing the cost function value ``F(x)``
         - (needed only if `restart === :fr`)
     - `f_grad` function for computing the gradient of ``f(x)``
