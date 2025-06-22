@@ -1,5 +1,9 @@
 # OptimalGradientDescent
 
+## Gradient Descent Comparison
+
+![plot](https://github.com/javiersc1/ProximalOptimizedGradientMethod/blob/main/plot.png?raw=true)
+
 ## Usage
 
 ```python
