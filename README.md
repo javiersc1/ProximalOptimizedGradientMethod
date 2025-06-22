@@ -1,9 +1,10 @@
 # OptimalGradientDescent
 
-pogm.py documentation
+## Usage
 
 ```
-"""
+def pogm(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom="pogm", restart="gr", restart_cutoff=0, bsig=1, tol=1e-4):
+    """
     x, out = pogm_restart(x0, Fcost, f_grad, f_L ;
     f_mu=0, mom=:pogm, restart=:gr, restart_cutoff=0.,
     bsig=1, niter=10, g_prox=(z,c)->z, fun=...)
@@ -88,4 +89,10 @@ pogm.py documentation
     2019-02-24 interface redesign
     2025-06-21 javier redesign for python
     """
+
+    if mom == "pogm":
+        return xnew, cost
+    else:
+        return ynew, cost
+
 ```
