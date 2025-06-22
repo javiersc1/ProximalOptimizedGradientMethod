@@ -2,7 +2,7 @@
 
 ## Usage
 
-```
+```python
 def pogm(x0, vargs, Fcost, f_grad, f_L, g_prox, f_mu=0, mom="pogm", restart="gr", restart_cutoff=0, bsig=1, tol=1e-4):
     """
     x, out = pogm_restart(x0, Fcost, f_grad, f_L ;
